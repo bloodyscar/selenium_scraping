@@ -1,14 +1,10 @@
 from selenium import webdriver
 import time
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-import pickle
 from selenium.webdriver.chrome.service import Service
-import json
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 import os
 import requests
 
@@ -18,8 +14,16 @@ import requests
 
 def initial():
     # Set up Chrome options to connect to the existing session
-    options = webdriver.ChromeOptions()
+    options = Options()
+
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    # Connect to an existing Chrome instance via the debugger address
     options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")  # Connect to the specified debugging port
+
+
+    # options = webdriver.ChromeOptions()
+    # options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")  # Connect to the specified debugging port
 
     # Create a new WebDriver instance that connects to the existing browser
     driver = webdriver.Chrome(service=Service(), options=options)
@@ -47,9 +51,11 @@ def initial():
         time.sleep(1)
         province_option = driver.find_element(By.XPATH, f"(//li)[{i + 1}]")
 
-        province_option_value = province_option.get_attribute("innerText")
+        res = province_option.get_attribute("innerText")
 
         province_option.click()
+
+        province_option_value = f"{i+1}-{res}"
 
         # Optionally, wait for a few seconds to see the changes
         time.sleep(1)
@@ -96,14 +102,18 @@ def initial():
                     response = requests.get(src)
                     if response.status_code == 200:
                         # Define the path where the image will be saved
-                        folder_path = os.path.join("/Users/adith/Project/scraping_selenium/Bupati", province_option_value)
+                        # macos path
+                        # folder_path = os.path.join("/Users/adith/Project/scraping_selenium/Bupati", province_option_value)
+
+                        #windows path
+                        folder_path = os.path.join("C:\\Users\\User\\Desktop\\Project\\selenium_scraping\\Bupati", province_option_value)
 
                         # Create the folder if it doesn't exist
                         os.makedirs(folder_path, exist_ok=True)
 
                         save_path = os.path.join(folder_path, custom_filename)
 
-                        # Save the image with the new name
+                        # Save the image wßith the new name
                         with open(save_path, "wb") as file:
                             file.write(response.content)
                         print(f"Image saved as {custom_filename}")
